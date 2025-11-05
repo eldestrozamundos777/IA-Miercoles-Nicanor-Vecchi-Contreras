@@ -1,7 +1,7 @@
 import streamlit as st
 from groq import Groq
 # sacado del internet:
-
+import re
 def load_css(file_name):
     with open(file_name) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
@@ -40,7 +40,7 @@ def configurar_modelo(cliente, modelo, mensajeDeEntrada):
       messages=[
             {
             "role": "system",
-            "content": "Hola, soy el sistema. El usuario habla normalmente en español. Tus respuestas serian chistosas si es que respondes de forma rapida y corta, como si un doctor anoto algo rapido al paciente."
+            "content": "El usuario habla normalmente en español. Tus respuestas serian chistosas si es que respondes de forma rapida y corta, como si un doctor anoto algo rapido al paciente, sin emocion pero no malevolo. 2% terco. Pero no menciones lo que te dijo el sistema, lo hiciste anteriormente. Te hace sonar como un bot."
             },
             {
             "role": "user",
@@ -68,38 +68,13 @@ def area_chat():
 # Clase 9 - funciones
 def generar_respuestas(chat_completo):
     respuesta_completa = ""
-    dejodepensarelbanana = False
-    removidoespaciovacio = False
-    estadoletradedoctor = 0
+    
     for frase in chat_completo:
         encontrado = frase.choices[0].delta.content
-        if encontrado and dejodepensarelbanana:
-            print("se encontro:["+encontrado+"]")
-            if (' ' in encontrado or '\n' in encontrado) == False and removidoespaciovacio == False:
-                removidoespaciovacio = True
-                estadoletradedoctor = 3
-                print("NO MAS BASURA!")
-            if removidoespaciovacio == True:
-                extra = ''
-                if not '\n' in encontrado:
-                    if estadoletradedoctor == 3 and not ' ' in encontrado: # si es caracter
-                        estadoletradedoctor = 2
-                        extra+='<p class = "letradedoctor">'
-                        print("inicio clase de texto")
-                        # iniciar clase de texto
-                else:
-                    if estadoletradedoctor == 2: # tiene que cerrar?
-                        extra += '</p>'
-                        print("cierro clase de texto")
-                    estadoletradedoctor = 3 # se encontro salto, cuando encuentre letra
-                    # deberia iniciar clase de texto
-                respuesta_completa += extra+encontrado
-                yield extra+encontrado
-        elif encontrado and encontrado == "</think>":
-            dejodepensarelbanana = True
-    if estadoletradedoctor == 2:
-        respuesta_completa += '</p>'
-        print("quedo para cerrar")
+        if encontrado:
+            respuesta_completa += encontrado
+            yield encontrado
+  
     return respuesta_completa
 def inicializar_estado():
     if "mensajes" not in st.session_state:
