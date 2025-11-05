@@ -57,7 +57,6 @@ def mostrar_historial():
     for mensaje in st.session_state.mensajes:  
         with st.chat_message(mensaje["role"], avatar= mensaje["avatar"]) : 
             if mensaje["role"] != "user":
-                print(mensaje["content"])
                 st.markdown(mensaje["content"], unsafe_allow_html=True)
             else:
                 st.markdown(mensaje["content"])
@@ -73,9 +72,24 @@ def generar_respuestas(chat_completo):
         encontrado = frase.choices[0].delta.content
         if encontrado:
             respuesta_completa += encontrado
-            yield encontrado
-  
-    return respuesta_completa
+    # codigo para ignorar los think
+    result = ""
+    i = 0
+    n = len(respuesta_completa)
+    skip = False
+    while i < n:
+        # Check if we found a <think>
+        if respuesta_completa[i]:
+            if respuesta_completa[i:i+7].lower() == "<think>":
+                skip = True
+            elif respuesta_completa[i:i+8].lower() == "</think>":
+                i = i + 7
+                skip = False
+            elif skip == False:
+                result = result+respuesta_completa[i]
+                yield respuesta_completa[i]
+        i += 1
+    return result
 def inicializar_estado():
     if "mensajes" not in st.session_state:
         st.session_state.mensajes = []
